@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#030810">
+  <title>Yusra AI | Quantum Intelligence</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&family=Exo+2:wght@300;400;500;600;700;900&family=Share+Tech+Mono&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Exo 2"', '"Cairo"', 'sans-serif'],
+            mono: ['"Share Tech Mono"', 'monospace'],
+            display: ['"Syncopate"', 'sans-serif'],
+          },
+          colors: {
+            cyan: {
+              DEFAULT: 'rgb(var(--primary-rgb) / <alpha-value>)',
+              400: 'rgb(var(--primary-rgb) / <alpha-value>)',
+              500: 'rgb(var(--primary-rgb) / <alpha-value>)',
+              dim: 'rgba(var(--primary-rgb), 0.1)',
+              glow: 'rgba(var(--primary-rgb), 0.6)',
+            },
+            pink: {
+              DEFAULT: 'rgb(var(--secondary-rgb) / <alpha-value>)',
+              400: 'rgb(var(--secondary-rgb) / <alpha-value>)',
+              500: 'rgb(var(--secondary-rgb) / <alpha-value>)',
+              dim: 'rgba(var(--secondary-rgb), 0.14)',
+            },
+            deep: {
+              0: '#030810',
+              1: '#050c18',
+              2: '#0a1628',
+              3: '#0f2040',
+            }
+          },
+          animation: {
+            'orb-1': 'orbFloat1 16s ease-in-out infinite',
+            'orb-2': 'orbFloat2 20s ease-in-out infinite',
+            'orb-3': 'orbFloat3 24s ease-in-out infinite',
+            'scan': 'scanLine 5s linear infinite',
+            'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+            'spin-slow': 'spin 12s linear infinite',
+            'void-pulse': 'voidPulse 15s ease-in-out infinite',
+            'flash': 'flash 2s infinite',
+            'hud-scan': 'hudScan 3s linear infinite',
+            'spark-x': 'sparkX 3s linear infinite',
+            'spark-x-rev': 'sparkXRev 3s linear infinite',
+            'spark-y': 'sparkY 3s linear infinite',
+            'spark-y-rev': 'sparkYRev 3s linear infinite',
+            'water-ripple': 'waterRipple 10s ease-in-out infinite alternate',
+            'nebula-spin': 'nebulaSpin 60s linear infinite',
+            'float-slow': 'floatSlow 8s ease-in-out infinite',
+            'text-shimmer': 'textShimmer 3s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            orbFloat1: {
+              '0%, 100%': { transform: 'translate(0,0) scale(1)' },
+              '33%': { transform: 'translate(45px,-65px) scale(1.06)' },
+              '66%': { transform: 'translate(-35px,45px) scale(0.94)' },
+            },
+            orbFloat2: {
+              '0%, 100%': { transform: 'translate(0,0) scale(1)' },
+              '50%': { transform: 'translate(-50px, 30px) scale(1.1)' },
+            },
+            orbFloat3: {
+              '0%, 100%': { transform: 'translate(0,0) scale(1)' },
+              '50%': { transform: 'translate(30px, 50px) scale(0.9)' },
+            },
+            scanLine: {
+              '0%': { backgroundPosition: '200% 0' },
+              '100%': { backgroundPosition: '-200% 0' },
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: 1, boxShadow: '0 0 10px rgba(var(--primary-rgb), 0.5)' },
+              '50%': { opacity: 0.5, boxShadow: '0 0 20px rgba(var(--primary-rgb), 0.2)' },
+            },
+            voidPulse: {
+              '0%, 100%': { backgroundPosition: '0% 0%' },
+              '50%': { backgroundPosition: '100% 100%' }
+            },
+            flash: {
+              '0%, 100%': { opacity: 1 },
+              '50%': { opacity: 0 }
+            },
+            hudScan: {
+              '0%': { top: '0%', opacity: 0 },
+              '10%': { opacity: 1 },
+              '90%': { opacity: 1 },
+              '100%': { top: '100%', opacity: 0 }
+            },
+            sparkX: {
+              '0%': { left: '-100%', opacity: 0 },
+              '25%': { opacity: 1 },
+              '100%': { left: '100%', opacity: 0 }
+            },
+            sparkXRev: {
+              '0%': { right: '-100%', opacity: 0 },
+              '25%': { opacity: 1 },
+              '100%': { right: '100%', opacity: 0 }
+            },
+            sparkY: {
+              '0%': { top: '-100%', opacity: 0 },
+              '25%': { opacity: 1 },
+              '100%': { top: '100%', opacity: 0 }
+            },
+            sparkYRev: {
+              '0%': { bottom: '-100%', opacity: 0 },
+              '25%': { opacity: 1 },
+              '100%': { bottom: '100%', opacity: 0 }
+            },
+            waterRipple: {
+              '0%': { transform: 'scale(1)', opacity: '0.1' },
+              '100%': { transform: 'scale(1.2)', opacity: '0.3' },
+            },
+            nebulaSpin: {
+              '0%': { transform: 'rotate(0deg) scale(1)' },
+              '50%': { transform: 'rotate(180deg) scale(1.1)' },
+              '100%': { transform: 'rotate(360deg) scale(1)' },
+            },
+            floatSlow: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            textShimmer: {
+              '0%': { backgroundPosition: '0% 50%' },
+              '100%': { backgroundPosition: '100% 50%' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --primary-rgb: 0, 242, 255; /* Default Cyan */
+      --secondary-rgb: 255, 77, 166; /* Default Pink */
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgb(var(--primary-rgb)); border-radius: 99px; }
+    /* Hide scrollbar for clean UI but keep functionality */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Mobile safe area adjustments */
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .safe-top {
+      padding-top: env(safe-area-inset-top);
+    }
+    body {
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .glass-panel {
+        background: rgba(5, 12, 24, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .text-glow {
+        text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3);
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "jszip": "https://esm.sh/jszip@^3.10.1"
+  }
+}
+</script>
+</head>
+<body class="bg-deep-0 text-white overflow-hidden w-full h-full selection:bg-cyan-dim selection:text-cyan fixed inset-0">
+  <div id="root" class="w-full h-full"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

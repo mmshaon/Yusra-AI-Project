@@ -1,0 +1,7 @@
+{
+  "name": "Yusra Quantum AI",
+  "description": "Yusra is a virtual clone of Ezreen Al Yusra, dedicated to Mohammad Maynul Hasan Shaon's baby daughter. It is an advanced engineering and coding assistant with real-time voice and vision capabilities.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
