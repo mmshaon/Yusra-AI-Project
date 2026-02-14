@@ -1,4 +1,3 @@
-
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { LOGO_URL } from '../constants';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
@@ -124,10 +123,12 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  // FIX: Replaced the constructor with a state class property.
-  // This modern syntax correctly initializes state and resolves typing errors
-  // where `this.state` and `this.props` were not recognized on the component instance.
-  state: ErrorBoundaryState = { hasError: false, error: null };
+  // FIX: Added a constructor to explicitly initialize state and props,
+  // resolving a type error where `this.props` was not recognized on the component instance.
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };

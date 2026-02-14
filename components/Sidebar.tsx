@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MessageSquare, Code, Eye, Mic, FileText, History, Plus, Settings as SettingsIcon, Crown, ChevronLeft, ChevronRight, X, ShieldAlert, Globe, Film } from 'lucide-react';
 import { ViewMode, Role, Language } from '../types';

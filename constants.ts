@@ -1,3 +1,4 @@
+
 export const APP_NAME = "YUSRA AI";
 export const APP_VERSION = "2.5 Quantum";
 

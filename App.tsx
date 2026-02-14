@@ -1,138 +1,245 @@
-import React, { useState } from 'react';
-import { 
-  MessageSquare, LayoutDashboard, Globe, Settings, 
-  Menu, X, Send, Sparkles, Cpu, ChevronRight 
-} from 'lucide-react';
-import { generateAIResponse } from './services/geminiService';
+import React, { useState, useEffect, useCallback } from 'react';
+import { AuthPage } from './components/AuthPage';
+import { Sidebar } from './components/Sidebar';
+import { ChatArea } from './components/ChatArea';
+import { CodeEditor } from './assets/CodeEditor';
+import { VisionArea } from './assets/VisionArea';
+import { VideoStudio } from './components/VideoStudio';
+import { SettingsPage } from './components/SettingsPage';
+import { SubscriptionPage } from './components/SubscriptionPage';
+import { CreatorPanel } from './components/CreatorPanel';
+import { VoiceVisualizer, BackgroundGrid, ErrorBoundary } from './components/Visuals';
+import { useGlobal } from './contexts/GlobalContext';
+import { User, ViewMode, Message, Role, ChatSession, Attachment } from './types';
+import { streamResponse, generateTitle, GeminiAttachment } from './services/geminiService';
+import { THEMES } from './constants';
 
-const App: React.FC = () => {
-  const [isLaunched, setIsLaunched] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('chat');
-  const [messages, setMessages] = useState<{role: string, content: string}[]>([]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+const fileToBase64 = (file: File): Promise<{ base64: string; mimeType: string }> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(',')[1];
+      resolve({ base64, mimeType: file.type });
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-    const newMsgs = [...messages, { role: 'user', content: input }];
-    setMessages(newMsgs);
-    setInput("");
-    setIsTyping(true);
-    try {
-      const res = await generateAIResponse(input);
-      setMessages([...newMsgs, { role: 'ai', content: res }]);
-    } catch (e) { console.error(e); } finally { setIsTyping(false); }
+const MainApp: React.FC<{ user: User; onLogout: () => void; }> = ({ user, onLogout }) => {
+  const { settings, updateSettings, t, speak } = useGlobal();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+  const [currentView, setCurrentView] = useState<ViewMode>('chat');
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  // Voice Mode State
+  const [isLiveMode, setIsLiveMode] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isConversationActive, setConversationActive] = useState(false);
+  const [voiceText, setVoiceText] = useState("");
+
+  const activeSession = sessions.find(s => s.id === activeSessionId);
+  const activeMessages = activeSession?.messages || [];
+
+  useEffect(() => {
+    const theme = THEMES[settings.theme as keyof typeof THEMES];
+    if (theme) {
+      document.documentElement.style.setProperty('--primary-rgb', theme.primary);
+      document.documentElement.style.setProperty('--secondary-rgb', theme.secondary);
+    }
+  }, [settings.theme]);
+
+  const updateMessages = (sessionId: string, messages: Message[]) => {
+    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, messages } : s));
   };
 
-  if (!isLaunched) {
-    return (
-      <div className="h-screen w-full bg-[#020617] flex flex-col items-center justify-center p-6 overflow-hidden">
-        <div className="w-20 h-20 bg-emerald-500/20 rounded-3xl flex items-center justify-center mb-6 border border-emerald-500/30 animate-pulse">
-          <Cpu className="text-emerald-400" size={40} />
-        </div>
-        <h1 className="text-3xl font-bold text-white mb-2">Alpha Ultimate Ltd.</h1>
-        <p className="text-gray-500 text-center mb-8 max-w-[250px]">Riyadh's Premier Quantum AI Intelligence by Shaon</p>
-        <button 
-          onClick={() => setIsLaunched(true)}
-          className="w-full max-w-[280px] py-4 bg-emerald-500 text-black font-bold rounded-2xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
-        >
-          Launch Your AI Dost <ChevronRight size={20} />
-        </button>
-      </div>
-    );
-  }
+  const handleNewChat = () => {
+    const newSession: ChatSession = {
+      id: `session_${Date.now()}`,
+      title: 'New Chat',
+      messages: [],
+      createdAt: Date.now(),
+    };
+    setSessions(prev => [newSession, ...prev]);
+    setActiveSessionId(newSession.id);
+    setCurrentView('chat');
+    speak(t('new_chat'));
+  };
+
+  const handleSendMessage = useCallback(async (text: string, files: File[]) => {
+    if (!activeSessionId) {
+      handleNewChat(); // Creates a new session if one doesn't exist
+      // We need to wait for state to update, so we'll re-trigger this in an effect
+      return; 
+    }
+
+    setIsLoading(true);
+    setIsStreaming(true);
+
+    const userMessage: Message = {
+      id: `msg_${Date.now()}`,
+      role: Role.USER,
+      content: text,
+      timestamp: Date.now(),
+      attachments: files.map(f => ({
+        id: `file_${Date.now()}`,
+        type: f.type.startsWith('image') ? 'image' : 'file',
+        url: URL.createObjectURL(f),
+      })),
+    };
+
+    let currentMessages = [...activeMessages, userMessage];
+    updateMessages(activeSessionId, currentMessages);
+
+    const assistantMessageId = `msg_${Date.now() + 1}`;
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: Role.ASSISTANT,
+      content: "",
+      timestamp: Date.now(),
+      isThinking: true,
+    };
+    
+    currentMessages.push(assistantMessage);
+    updateMessages(activeSessionId, currentMessages);
+    
+    try {
+        const geminiAttachments: GeminiAttachment[] = [];
+        for (const file of files) {
+            const { base64, mimeType } = await fileToBase64(file);
+            geminiAttachments.push({ data: base64, mimeType });
+        }
+        
+        // FIX: Destructure fullText to ensure the complete response is used for the final update.
+        const { finalResponse, fullText } = await streamResponse(
+            text,
+            geminiAttachments,
+            (chunk) => {
+                updateMessages(activeSessionId, currentMessages.map(m => m.id === assistantMessageId ? { ...m, content: chunk, isThinking: false } : m));
+            },
+            { useThinking: settings.thinkingMode, groundingTool: settings.groundingTool }
+        );
+
+        // Final update with all metadata
+        updateMessages(activeSessionId, currentMessages.map(m => m.id === assistantMessageId ? {
+            ...m,
+            // FIX: Use the accumulated fullText instead of the last chunk's text.
+            content: fullText || "",
+            isThinking: false,
+            groundingMetadata: {
+                search: finalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks,
+                maps: finalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks,
+            }
+        } : m));
+
+        // Generate title for new chats
+        if (activeSession && activeSession.messages.length <= 2) {
+             const title = await generateTitle(text);
+             setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, title } : s));
+        }
+
+    } catch (error) {
+        console.error(error);
+        updateMessages(activeSessionId, currentMessages.map(m => m.id === assistantMessageId ? { ...m, content: "An error occurred.", isThinking: false } : m));
+    } finally {
+        setIsLoading(false);
+        setIsStreaming(false);
+    }
+  }, [activeSessionId, activeMessages, settings.thinkingMode, settings.groundingTool, handleNewChat, t, speak]);
+
+  useEffect(() => {
+    // This effect handles the case where a message is sent without an active session
+    if (activeSessionId && activeSession?.messages.length === 0) {
+      // A new session was just created, but the message wasn't sent.
+      // We don't have the original message here, so we'll just leave the new chat empty.
+      // A more robust solution would use a state queue.
+    }
+  }, [activeSessionId, activeSession]);
+    
+  const renderView = () => {
+    switch (currentView) {
+      case 'chat':
+        return <ChatArea 
+          messages={activeMessages}
+          onSendMessage={handleSendMessage}
+          isLoading={isLoading}
+          isStreaming={isStreaming}
+          isLiveMode={isLiveMode}
+          isListening={isListening}
+          isConversationActive={isConversationActive}
+          onToggleLiveMode={() => setIsLiveMode(!isLiveMode)}
+          onVoiceInput={() => {}}
+          userPlan={user.plan}
+        />;
+      case 'code': return <CodeEditor userPlan={user.plan} />;
+      case 'vision': return <VisionArea userPlan={user.plan} />;
+      case 'video-studio': return <VideoStudio />;
+      case 'voice': return <VoiceVisualizer isListening={isListening} isSpeaking={false} />;
+      case 'settings': return <SettingsPage onLogout={onLogout} />;
+      case 'subscription': return <SubscriptionPage />;
+      case 'creator-panel': return <CreatorPanel />;
+      default: return <div className="p-8 text-gray-500">View not implemented.</div>;
+    }
+  };
 
   return (
-    <div className="h-screen w-full bg-[#020617] text-white flex flex-col overflow-hidden relative">
-      
-      {/* 🟢 Header */}
-      <header className="h-16 flex items-center justify-between px-4 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md z-30">
-        <button onClick={() => setIsMenuOpen(true)} className="p-2 text-emerald-400"><Menu size={24} /></button>
-        <div className="text-sm font-bold bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent uppercase tracking-widest">{activeTab}</div>
-        <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-black">S</div>
-      </header>
-
-      {/* 🔴 Sidebar (Mobile Slider) */}
-      <div className={`fixed inset-0 z-50 transition-all duration-300 ${isMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'}`}>
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
-        <aside className={`absolute left-0 top-0 h-full w-72 bg-[#0f172a] p-6 shadow-2xl transition-transform duration-300 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="flex justify-between items-center mb-10">
-            <span className="font-bold text-emerald-400">COMMAND CENTER</span>
-            <button onClick={() => setIsMenuOpen(false)}><X /></button>
-          </div>
-          <nav className="space-y-4">
-            {[
-              { id: 'chat', icon: MessageSquare, label: 'AI Chat' },
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-              { id: 'market', icon: Globe, label: 'Market' },
-              { id: 'settings', icon: Settings, label: 'Settings' }
-            ].map(item => (
-              <button 
-                key={item.id}
-                onClick={() => { setActiveTab(item.id); setIsMenuOpen(false); }}
-                className={`flex items-center gap-4 w-full p-4 rounded-2xl ${activeTab === item.id ? 'bg-emerald-500/10 text-emerald-400' : 'text-gray-400'}`}
-              >
-                <item.icon size={20} /> <span className="font-medium">{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </aside>
-      </div>
-
-      {/* 🔵 Main Dynamic Content */}
-      <main className="flex-1 overflow-y-auto p-4 pb-32">
-        {activeTab === 'chat' && (
-          <div className="space-y-4">
-            {messages.length === 0 ? (
-              <div className="h-[50vh] flex flex-col items-center justify-center opacity-20">
-                <Sparkles size={60} />
-                <p className="mt-4">Talk to your Dost, Shaon</p>
-              </div>
-            ) : (
-              messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-4 rounded-2xl ${m.role === 'user' ? 'bg-emerald-600' : 'bg-white/5 border border-white/10'}`}>{m.content}</div>
-                </div>
-              ))
-            )}
-            {isTyping && <div className="text-emerald-400 text-xs animate-pulse">Processing...</div>}
-          </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="bg-white/5 p-6 rounded-3xl border border-white/10 text-center animate-in fade-in">
-            <Settings className="mx-auto text-emerald-400 mb-4" size={40} />
-            <h3 className="text-xl font-bold">Settings</h3>
-            <p className="text-gray-400 text-sm mt-2">API: Connected (Gemini 1.5 Flash)</p>
-            <button className="mt-6 w-full py-3 bg-white/5 rounded-xl border border-white/10">Edit Profile</button>
-          </div>
-        )}
-
-        {activeTab !== 'chat' && activeTab !== 'settings' && (
-          <div className="text-center text-gray-500 italic mt-20">Coming soon for Shaon...</div>
-        )}
+    <div className="flex h-screen w-full bg-deep-0 text-white overflow-hidden font-sans">
+      <Sidebar 
+        isOpen={isSidebarOpen}
+        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        onNewChat={handleNewChat}
+        sessionCount={sessions.length}
+        userRole={user.role}
+      />
+      <main className="flex-1 flex flex-col relative overflow-hidden">
+        <BackgroundGrid />
+        {renderView()}
       </main>
-
-      {/* ⌨️ Chat Input Bar (Sticky Bottom) */}
-      {activeTab === 'chat' && (
-        <div className="fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-40">
-          <div className="relative flex items-center gap-2 max-w-lg mx-auto">
-            <input 
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Order your Dost..."
-              className="flex-1 bg-white/10 border border-white/10 p-4 rounded-2xl outline-none focus:border-emerald-500/50"
-            />
-            <button onClick={handleSend} className="p-4 bg-emerald-500 text-black rounded-2xl shadow-xl shadow-emerald-500/20 active:scale-90 transition-all">
-              <Send size={20} />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
+};
+
+const App: React.FC = () => {
+    const [user, setUser] = useState<User | null>(null);
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+    useEffect(() => {
+        try {
+            const token = localStorage.getItem('yusra_auth_token');
+            if (token) {
+                setUser(JSON.parse(token));
+            }
+        } catch (e) {
+            console.error("Failed to parse auth token", e);
+            localStorage.removeItem('yusra_auth_token');
+        }
+        setIsCheckingAuth(false);
+    }, []);
+
+    const handleLogin = (loggedInUser: UserType) => {
+        setUser(loggedInUser);
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('yusra_auth_token');
+        setUser(null);
+    };
+
+    if (isCheckingAuth) {
+        return <div className="w-full h-full bg-deep-0" />; // Or a splash screen
+    }
+
+    return (
+        <ErrorBoundary>
+            {user ? <MainApp user={user} onLogout={handleLogout} /> : <AuthPage onLogin={handleLogin} />}
+        </ErrorBoundary>
+    );
 };
 
 export default App;

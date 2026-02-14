@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Send, Paperclip, Mic, StopCircle, User, Bot, Copy, Volume2, Globe, Zap, Camera, MapPin, Search, Brain, Loader2, Code, MessageSquare } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
