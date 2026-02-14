@@ -115,10 +115,10 @@ CORE RULES:
 `;
 
 export const THEMES = {
-  cyber: { 
-    name: 'Cyber',
-    primary: '0, 242, 255', // Cyan
-    secondary: '255, 77, 166' // Pink
+  alpha: { 
+    name: 'Alpha',
+    primary: '59, 130, 246', // Blue
+    secondary: '236, 72, 153' // Pink
   },
   violet: { 
     name: 'Violet',
@@ -132,20 +132,20 @@ export const THEMES = {
   },
   matrix: { 
     name: 'Matrix',
-    primary: '0, 255, 65', // Matrix Green
+    primary: '16, 185, 129', // Emerald Green
     secondary: '0, 143, 17' // Dark Green
   },
   danger: { 
     name: 'Danger',
-    primary: '255, 59, 59', // Red
+    primary: '239, 68, 68', // Red
     secondary: '255, 140, 0' // Orange
   }
 };
 
 export const SAMPLE_PROMPTS = [
-  { label: "🐍 Python Scraper", prompt: "Write a Python web scraper using BeautifulSoup" },
-  { label: "⚡ JS Async/Await", prompt: "Explain async/await in JavaScript with examples" },
-  { label: "🌐 Node.js API", prompt: "Build a REST API with Node.js and Express" },
-  { label: "🐛 Debug Error", prompt: "Debug: TypeError cannot read property of undefined" },
-  { label: "🧬 Identity", prompt: "Who are you?" },
+  { label: "Python Scraper", prompt: "Write a Python web scraper using BeautifulSoup", icon: '🐍' },
+  { label: "JS Async/Await", prompt: "Explain async/await in JavaScript with examples", icon: '⚡' },
+  { label: "Node.js API", prompt: "Build a REST API with Node.js and Express", icon: '🌐' },
+  { label: "Debug Error", prompt: "Debug: TypeError cannot read property of undefined", icon: '🐛' },
+  { label: "Identity", prompt: "Who are you?", icon: '🧬' },
 ];

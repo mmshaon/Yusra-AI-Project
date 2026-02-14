@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageSquare, Code, Eye, Mic, FileText, History, Plus, Settings as SettingsIcon, Crown, ChevronLeft, ChevronRight, X, ShieldAlert, Globe, Film } from 'lucide-react';
 import { ViewMode, Role, Language } from '../types';
@@ -30,9 +29,9 @@ const NavItem: React.FC<{
       relative flex items-center cursor-pointer transition-all duration-300 group
       ${isCollapsed ? 'justify-center w-10 h-10 mx-auto my-2 rounded-xl' : 'px-3 py-3 mx-2 my-1 gap-3 rounded-xl'}
       ${active 
-        ? danger ? 'bg-red-500/20 text-red-400' : 'bg-cyan-dim text-cyan' 
+        ? danger ? 'bg-red-500/20 text-red-400' : 'bg-primary/10 text-primary' 
         : special 
-          ? 'bg-gradient-to-r from-pink-500/10 to-cyan-500/10 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400 border border-white/5 hover:border-pink-500/30' 
+          ? 'bg-gradient-to-r from-pink-500/10 to-primary/10 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-primary border border-white/5 hover:border-pink-500/30' 
           : danger
             ? 'text-red-500 hover:bg-red-500/10'
             : 'text-gray-400 hover:bg-deep-2 hover:text-gray-100'}
@@ -40,13 +39,13 @@ const NavItem: React.FC<{
   >
     {/* Active Indicator Line (Expanded Only) */}
     {active && !isCollapsed && (
-      <div className={`absolute left-0 top-2 bottom-2 w-1 rounded-r-full ${danger ? 'bg-red-500' : 'bg-gradient-to-b from-cyan-400 to-pink-500'}`} />
+      <div className={`absolute left-0 top-2 bottom-2 w-1 rounded-r-full ${danger ? 'bg-red-500' : 'bg-gradient-to-b from-primary to-pink-500'}`} />
     )}
     
     {/* Icon Container */}
     <div className={`
       flex items-center justify-center shrink-0 transition-transform duration-300 relative z-10
-      ${active && isCollapsed ? (danger ? 'bg-red-500/10 rounded-lg' : 'text-cyan-400') : ''}
+      ${active && isCollapsed ? (danger ? 'bg-red-500/10 rounded-lg' : 'text-primary') : ''}
     `}>
       {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, {
          className: `transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'} ${active && !isCollapsed ? 'animate-pulse' : ''}`,
@@ -109,23 +108,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, onN
 
       <div 
         className={`
-          fixed md:relative top-0 left-0 h-full bg-deep-1/95 border-r border-cyan-dim backdrop-blur-xl transition-[width] duration-300 ease-in-out z-[80] flex flex-col shadow-2xl
+          fixed md:relative top-0 left-0 h-full bg-slate-900/70 border-r border-primary/20 backdrop-blur-xl transition-[width] duration-300 ease-in-out z-[80] flex flex-col shadow-2xl
           ${isOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full md:translate-x-0 md:w-[72px]'}
         `}
       >
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-pink-500 to-cyan-400 animate-scan bg-[length:200%_100%] opacity-50" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-pink-500 to-primary animate-scan bg-[length:200%_100%] opacity-50" />
 
         {/* Header / Logo */}
         <div className={`flex items-center p-4 border-b border-white/5 h-[70px] shrink-0 ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
           <div className="flex items-center gap-3 overflow-hidden">
             <div className={`flex items-center justify-center relative shrink-0 transition-all duration-300 ${isCollapsed ? 'w-10 h-10' : 'w-10 h-10'}`}>
-               <div className="absolute inset-0 bg-cyan-400/20 blur-md rounded-full animate-pulse"></div>
-               <img src={LOGO_URL} alt="Logo" className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_5px_rgba(0,242,255,0.8)]" />
+               <div className="absolute inset-0 bg-primary/20 blur-md rounded-full animate-pulse"></div>
+               <img src={LOGO_URL} alt="Logo" className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]" />
             </div>
             
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden transition-opacity duration-300 opacity-100">
-                <h1 className="font-display text-sm font-bold tracking-[2px] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500 truncate">
+                <h1 className="font-display text-sm font-bold tracking-[2px] text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-500 truncate">
                   {APP_NAME}
                 </h1>
                 <span className="text-[9px] text-gray-500 tracking-[1.5px] uppercase truncate">Quantum Intelligence</span>
@@ -200,12 +199,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, onN
                ${isCollapsed ? 'justify-center w-10 h-10 mx-auto my-2 rounded-xl' : 'px-3 py-3 mx-2 my-1 gap-3 rounded-xl'}
              `}
            >
-              <div className={`flex items-center justify-center shrink-0 ${!isCollapsed ? 'bg-deep-1 border border-deep-3 rounded-lg p-1 text-gray-400 group-hover:text-cyan-400' : 'text-gray-400 group-hover:text-cyan-400'}`}>
+              <div className={`flex items-center justify-center shrink-0 ${!isCollapsed ? 'bg-deep-1 border border-deep-3 rounded-lg p-1 text-gray-400 group-hover:text-primary' : 'text-gray-400 group-hover:text-primary'}`}>
                  <Globe size={isCollapsed ? 20 : 18} />
               </div>
               
               {!isCollapsed && (
-                <span className="font-medium text-sm tracking-wide font-sans truncate flex-1 text-gray-400 group-hover:text-cyan-400">
+                <span className="font-medium text-sm tracking-wide font-sans truncate flex-1 text-gray-400 group-hover:text-primary">
                    {getLangLabel()}
                 </span>
               )}
@@ -223,7 +222,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, onN
         {/* Desktop Collapse Toggle */}
         <button 
           onClick={toggleSidebar}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-deep-2 border border-cyan-dim rounded-full items-center justify-center text-cyan hover:scale-110 transition-transform z-50 hidden md:flex shadow-lg"
+          className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-deep-2 border border-primary/30 rounded-full items-center justify-center text-primary hover:scale-110 transition-transform z-50 hidden md:flex shadow-lg"
         >
           {isOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
         </button>

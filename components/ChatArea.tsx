@@ -1,6 +1,5 @@
-
 import React, { useRef, useEffect, useState } from 'react';
-import { Send, Paperclip, Mic, StopCircle, User, Bot, Copy, Volume2, Globe, Zap, Camera, MapPin, Search, Brain, Loader2 } from 'lucide-react';
+import { Send, Paperclip, Mic, StopCircle, User, Bot, Copy, Volume2, Globe, Zap, Camera, MapPin, Search, Brain, Loader2, Code, MessageSquare } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Message, Role } from '../types';
 import { LoadingIndicator } from './Visuals';
@@ -125,7 +124,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   };
 
   const handleTTS = async (text: string) => {
-      // Use Gemini TTS if online/enabled, else fallback to global speak
       try {
           const buffer = await generateSpeech(text);
           const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -134,7 +132,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           source.connect(ctx.destination);
           source.start(0);
       } catch (e) {
-          // Fallback
+          // Fallback to browser's native speech synthesis if Gemini fails
+          console.error("Gemini TTS failed, falling back to browser speech.", e);
           speak(text);
       }
   };
@@ -173,7 +172,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     if (isConversationActive) {
       placeholder = language === 'en' ? "Listening for command..." : "কমান্ডের জন্য শুনছি...";
     } else {
-      placeholder = language === 'en' ? "Standby... Say 'Hi Yusra'" : "স্ট্যান্ডবাই... বলুন 'হাই ইউসরা'";
+      placeholder = language === 'en' ? `Standby... Say 'Hi ${settings.wakeWord}'` : `স্ট্যান্ডবাই... বলুন 'হাই ${settings.wakeWord}'`;
     }
   } else if (isListening) {
     placeholder = language === 'en' ? "Listening..." : "শুনছি...";
@@ -188,35 +187,35 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 no-scrollbar w-full">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4 md:p-8 animate-fade-in w-full">
-            {/* Animated Main Logo Empty State */}
             <div className="relative w-32 h-32 mb-6 group shrink-0">
-              <div className="absolute inset-0 bg-cyan-400/20 blur-[30px] rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 bg-primary/20 blur-[30px] rounded-full animate-pulse"></div>
               <img 
                 src={LOGO_URL} 
                 alt="Yusra" 
-                className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(0,242,255,0.4)] animate-orb-1" 
+                className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.4)] animate-orb-1" 
               />
             </div>
             
-            <h2 className="font-display text-2xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500 mb-4 tracking-wider">
+            <h2 className="font-display text-2xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary/80 via-white to-pink-500 mb-4 tracking-wider">
               {t('welcome_title')}
             </h2>
-            <p className="text-gray-400 max-w-md mb-8 font-light leading-relaxed text-sm md:text-base px-2">
-              {t('welcome_subtitle')}.
-              <br/>
-              Dedicated to Mohammad Maynul Hasan Shaon's baby daughter.
-              <span className="text-xs font-mono text-cyan-600/70 mt-3 block">Expert in Coding & General Queries</span>
+            <p className="text-gray-400 max-w-lg mb-8 font-light leading-relaxed text-sm md:text-base px-2">
+              {t('welcome_subtitle')}. {`I'm an expert in coding, analysis, and general queries. How can I assist you?`}
             </p>
             
-            <div className="flex flex-wrap justify-center gap-2 md:gap-3 max-w-2xl">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 max-w-2xl w-full">
               {SAMPLE_PROMPTS.map((prompt, idx) => (
-                <button 
+                <div 
                   key={idx}
-                  onClick={() => setInput(prompt.prompt)}
-                  className="px-3 py-2 bg-deep-2 border border-white/10 rounded-full text-xs text-gray-300 hover:border-cyan-400 hover:text-cyan-400 transition-all active:scale-95"
+                  onClick={() => onSendMessage(prompt.prompt, [])}
+                  className="group relative p-4 bg-slate-800/50 rounded-xl border border-white/10 hover:border-primary/50 hover:bg-slate-800/80 transition-all cursor-pointer text-left"
                 >
-                  {prompt.label}
-                </button>
+                  <div className="flex items-start justify-between">
+                     <p className="text-sm font-semibold text-gray-200 group-hover:text-primary transition-colors">{prompt.label}</p>
+                     <span className="text-xl opacity-50 group-hover:opacity-100 transition-opacity">{prompt.icon}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{prompt.prompt}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -230,8 +229,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               <div className={`
                 w-8 h-8 rounded-full flex items-center justify-center shrink-0 border overflow-hidden relative
                 ${msg.role === Role.ASSISTANT 
-                  ? 'bg-deep-2 border-cyan-dim shadow-[0_0_10px_rgba(0,242,255,0.2)]' 
-                  : 'bg-deep-2 border-pink-500/20 text-pink-500'}
+                  ? 'bg-deep-1 border-primary/30 shadow-[0_0_10px_rgba(59,130,246,0.2)]' 
+                  : 'bg-deep-1 border-pink-500/20 text-pink-500'}
               `}>
                 {msg.role === Role.ASSISTANT ? (
                    <img src={LOGO_URL} alt="Yusra" className="w-full h-full object-cover p-1" />
@@ -246,10 +245,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 ${msg.role === Role.USER ? 'items-end' : 'items-start'}
               `}>
                 <div className={`
-                  p-3 md:p-4 rounded-2xl text-sm leading-relaxed backdrop-blur-md shadow-xl w-full
+                  p-3 md:p-4 rounded-2xl text-sm leading-relaxed shadow-xl w-full backdrop-blur-lg
                   ${msg.role === Role.USER 
-                    ? 'bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/20 rounded-tr-sm text-cyan-50' 
-                    : 'bg-deep-2/80 border border-white/5 rounded-tl-sm text-gray-200'}
+                    ? 'bg-primary/10 border border-primary/20 rounded-tr-sm text-gray-100' 
+                    : 'bg-slate-800/50 border border-white/10 rounded-tl-sm text-gray-200'}
                 `}>
                   {/* Attachments */}
                   {msg.attachments && msg.attachments.length > 0 && (
@@ -263,7 +262,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                   )}
 
                   {/* Text Content with Markdown */}
-                  <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-pre:bg-deep-3 prose-pre:border prose-pre:border-white/10 prose-code:text-cyan-300 break-words">
+                  <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-pre:bg-deep-0/50 prose-pre:border prose-pre:border-white/10 prose-code:text-primary break-words">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
 
@@ -271,7 +270,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                   {(msg.groundingMetadata?.search || msg.groundingMetadata?.maps) && (
                       <div className="mt-3 pt-3 border-t border-white/10 text-xs">
                           {msg.groundingMetadata.search?.map((s: any, i: number) => (
-                              <a key={i} href={s.web.uri} target="_blank" rel="noopener noreferrer" className="block text-cyan-400 hover:underline mb-1 flex items-center gap-2">
+                              <a key={i} href={s.web.uri} target="_blank" rel="noopener noreferrer" className="block text-primary hover:underline mb-1 flex items-center gap-2">
                                   <Search size={10} /> {s.web.title}
                               </a>
                           ))}
@@ -293,10 +292,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                   </span>
                   {msg.role === Role.ASSISTANT && (
                     <>
-                      <button className="text-gray-500 hover:text-cyan-400 transition-colors p-1" onClick={() => navigator.clipboard.writeText(msg.content)} title="Copy">
+                      <button className="text-gray-500 hover:text-primary transition-colors p-1" onClick={() => navigator.clipboard.writeText(msg.content)} title="Copy">
                         <Copy size={12} />
                       </button>
-                      <button className="text-gray-500 hover:text-cyan-400 transition-colors p-1" onClick={() => handleTTS(msg.content)} title="Speak">
+                      <button className="text-gray-500 hover:text-primary transition-colors p-1" onClick={() => handleTTS(msg.content)} title="Speak">
                         <Volume2 size={12} />
                       </button>
                     </>
@@ -309,7 +308,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         
         {isLoading && (
           <div className="flex gap-4 max-w-4xl mx-auto px-2">
-             <div className="w-8 h-8 rounded-full bg-deep-2 border border-cyan-dim text-cyan-400 flex items-center justify-center shrink-0 p-1">
+             <div className="w-8 h-8 rounded-full bg-deep-1 border border-primary/30 flex items-center justify-center shrink-0 p-1">
                 <img src={LOGO_URL} alt="Yusra" className="w-full h-full object-cover opacity-70 animate-pulse" />
              </div>
              <LoadingIndicator text={settings.thinkingMode ? "Deep Thinking..." : "Quantum Processing"} />
@@ -319,12 +318,12 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 p-3 md:p-6 bg-deep-1/80 border-t border-white/5 backdrop-blur-xl w-full safe-bottom">
+      <div className="shrink-0 p-3 md:p-6 bg-deep-0/80 border-t border-white/5 backdrop-blur-xl w-full safe-bottom">
         {attachments.length > 0 && (
           <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">
             {attachments.map((file, i) => (
               <div key={i} className="relative group shrink-0">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-lg border border-cyan-dim/30 bg-deep-2 flex items-center justify-center overflow-hidden">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-lg border border-primary/30 bg-deep-1 flex items-center justify-center overflow-hidden">
                   {file.type.startsWith('image') 
                     ? <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="preview" />
                     : <span className="text-xs text-gray-400">{file.name.slice(0,8)}...</span>
@@ -342,18 +341,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         )}
 
         <div className={`
-          relative max-w-4xl mx-auto flex items-end gap-2 bg-deep-2/50 p-2 rounded-2xl border transition-all shadow-lg
+          relative max-w-4xl mx-auto flex items-end gap-2 bg-slate-800/50 p-2 rounded-2xl border transition-all shadow-lg
           ${isConversationActive 
              ? 'border-pink-500/80 shadow-[0_0_20px_rgba(236,72,153,0.3)] bg-pink-500/5' 
              : isLiveMode 
                ? 'border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)]' 
-               : 'border-white/10 focus-within:border-cyan-500/50 focus-within:shadow-[0_0_20px_rgba(0,242,255,0.1)]'}
+               : 'border-white/10 focus-within:border-primary/50 focus-within:shadow-[0_0_20px_rgba(59,130,246,0.1)]'}
         `}>
           {/* File Input */}
           <input type="file" multiple ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
           <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleFileSelect} />
           
-          <button onClick={() => fileInputRef.current?.click()} className="p-2 md:p-3 text-gray-400 hover:text-cyan-400 hover:bg-cyan-400/10 rounded-xl transition-colors shrink-0" title="Attach Files">
+          <button onClick={() => fileInputRef.current?.click()} className="p-2 md:p-3 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors shrink-0" title="Attach Files">
             <Paperclip size={20} />
           </button>
 
@@ -391,7 +390,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                  </button>
                  <button 
                     onClick={() => updateSettings({ groundingTool: settings.groundingTool === 'maps' ? 'none' : 'maps' })}
-                    className={`p-1 rounded transition-colors ${settings.groundingTool === 'maps' ? 'text-green-400 bg-green-400/10' : 'text-gray-500 hover:text-green-400'}`}
+                    className={`p-1 rounded transition-colors ${settings.groundingTool === 'maps' ? 'text-success bg-success/10' : 'text-gray-500 hover:text-success'}`}
                     title="Google Maps Grounding"
                  >
                     <MapPin size={14} />
@@ -399,7 +398,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
              </div>
 
              {input || attachments.length > 0 ? (
-                <button onClick={handleSend} className="p-2 md:p-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 transition-all">
+                <button onClick={handleSend} className="p-2 md:p-3 bg-gradient-to-r from-primary to-blue-600 text-white rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
                   <Send size={20} />
                 </button>
               ) : (

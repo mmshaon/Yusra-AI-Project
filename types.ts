@@ -50,7 +50,7 @@ export interface ChatSession {
 }
 
 export interface AppSettings {
-  theme: 'cyber' | 'violet' | 'gold' | 'matrix' | 'danger';
+  theme: 'alpha' | 'violet' | 'gold' | 'matrix' | 'danger';
   autoSpeak: boolean;
   voiceRate: number; 
   voicePitch: number; 

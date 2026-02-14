@@ -4,12 +4,46 @@ import { DEFAULT_SYSTEM_INSTRUCTION } from "../constants";
 
 // Ensure API Key is available
 const apiKey = process.env.API_KEY;
+if (!apiKey) {
+  throw new Error("API_KEY environment variable not set");
+}
 const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export interface GeminiAttachment {
   mimeType: string;
   data: string;
 }
+
+// --- Audio Decoding Helpers (Guideline Compliant) ---
+function decodeBase64(base64: string) {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function decodePcmAudio(
+  data: Uint8Array,
+  ctx: AudioContext,
+  sampleRate: number,
+  numChannels: number,
+): Promise<AudioBuffer> {
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length / numChannels;
+  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < frameCount; i++) {
+      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+    }
+  }
+  return buffer;
+}
+
 
 // --- 1. Chat & Text Generation (with Grounding & Thinking) ---
 export const streamResponse = async (
@@ -20,7 +54,7 @@ export const streamResponse = async (
     useThinking?: boolean;
     groundingTool?: 'search' | 'maps' | 'none';
   } = {}
-): Promise<GenerateContentResponse> => {
+): Promise<{ finalResponse: GenerateContentResponse, fullText: string }> => {
   try {
     const parts: any[] = [];
     attachments.forEach(att => {
@@ -64,8 +98,8 @@ export const streamResponse = async (
       finalResponse = chunk; // Keep last chunk for metadata
     }
     
-    // Return final response to access grounding metadata if needed
-    return finalResponse;
+    // FIX: Return both the final response for metadata and the full accumulated text
+    return { finalResponse: finalResponse as GenerateContentResponse, fullText };
   } catch (error) {
     console.error("Gemini API Error:", error);
     throw error;
@@ -124,11 +158,12 @@ export const generateSpeech = async (text: string, voiceName: string = 'Kore'): 
 
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     if (!base64Audio) throw new Error("No audio generated");
-
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const audioBuffer = await audioContext.decodeAudioData(
-        Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0)).buffer
-    );
+    
+    const audioBytes = decodeBase64(base64Audio);
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
+    // CRITICAL FIX: Use custom decoder for raw PCM data instead of native decodeAudioData
+    const audioBuffer = await decodePcmAudio(audioBytes, audioContext, 24000, 1);
+    
     return audioBuffer;
 };
 
@@ -163,11 +198,25 @@ export const analyzeVisual = async (prompt: string, base64Image: string, mimeTyp
 export const generateTitle = async (message: string): Promise<string> => {
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite', // Fast model for simple tasks
+      model: 'gemini-flash-lite-latest', // Corrected: Use valid, fast model
       contents: `Summarize this message into a short, concise chat title (max 5 words): "${message}"`,
     });
     return response.text?.trim() || "New Chat";
   } catch (e) {
     return "New Chat";
+  }
+};
+
+// New function for the "Dost" app
+export const generateAIResponse = async (prompt: string): Promise<string> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `You are Dost, an AI assistant for Alpha Ultimate Ltd in Riyadh. Your user is Shaon. Be helpful, concise, and professional. User prompt: "${prompt}"`,
+    });
+    return response.text || "Sorry, I couldn't think of a response.";
+  } catch (error) {
+    console.error("Dost AI Error:", error);
+    return "There was an error connecting to the AI service.";
   }
 };

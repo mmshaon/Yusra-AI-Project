@@ -1,16 +1,17 @@
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { LOGO_URL } from '../constants';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export const BackgroundGrid: React.FC = () => (
-  <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+  <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-deep-0">
     {/* Dynamic Grid Layer */}
     <div 
       className="absolute inset-0 opacity-[0.05]" 
       style={{
         backgroundImage: `
-          linear-gradient(rgba(0, 242, 255, 0.4) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0, 242, 255, 0.4) 1px, transparent 1px)
+          linear-gradient(rgba(59, 130, 246, 0.4) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(59, 130, 246, 0.4) 1px, transparent 1px)
         `,
         backgroundSize: '40px 40px',
         animation: 'panGrid 60s linear infinite'
@@ -18,7 +19,7 @@ export const BackgroundGrid: React.FC = () => (
     />
     
     {/* Colorful Nebula Layers */}
-    <div className="absolute top-[-20%] left-[-10%] w-[80vw] h-[80vw] bg-cyan-500/10 rounded-full blur-[120px] animate-orb-1 mix-blend-screen"></div>
+    <div className="absolute top-[-20%] left-[-10%] w-[80vw] h-[80vw] bg-primary/10 rounded-full blur-[120px] animate-orb-1 mix-blend-screen"></div>
     <div className="absolute bottom-[-20%] right-[-10%] w-[80vw] h-[80vw] bg-pink-500/10 rounded-full blur-[120px] animate-orb-2 mix-blend-screen"></div>
     <div className="absolute top-[40%] left-[30%] w-[60vw] h-[60vw] bg-purple-500/10 rounded-full blur-[150px] animate-orb-3 mix-blend-screen"></div>
 
@@ -35,14 +36,13 @@ export const BackgroundGrid: React.FC = () => (
 );
 
 export const LoadingIndicator: React.FC<{ text?: string }> = ({ text = "Processing" }) => (
-  <div className="flex items-center gap-3 p-3 bg-deep-2/50 rounded-xl border border-white/5 w-fit animate-fade-in shadow-[0_0_15px_rgba(0,242,255,0.1)]">
-    <div className="flex gap-1 relative">
-      <div className="absolute inset-0 bg-cyan-400/30 blur-md"></div>
-      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.3s]"></div>
-      <div className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-bounce [animation-delay:-0.15s]"></div>
-      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce"></div>
+  <div className="flex items-center gap-3 p-3 bg-deep-1/50 rounded-xl border border-white/5 w-fit animate-fade-in shadow-[0_0_15px_rgba(59,130,246,0.1)] backdrop-blur-sm">
+    <div className="relative w-5 h-5">
+      <div className="absolute inset-0 border-2 border-primary/30 rounded-full"></div>
+      <div className="absolute inset-0 border-t-2 border-primary rounded-full animate-spin"></div>
+      <div className="absolute inset-2 bg-primary/20 rounded-full animate-quantum-pulse"></div>
     </div>
-    <span className="text-xs font-mono text-cyan-400 tracking-widest">{text.toUpperCase()}...</span>
+    <span className="text-xs font-mono text-primary/80 tracking-widest">{text.toUpperCase()}...</span>
   </div>
 );
 
@@ -72,7 +72,7 @@ export const VoiceVisualizer: React.FC<{ isListening: boolean; isSpeaking: boole
       <div className={`relative w-[300px] h-[300px] transition-all duration-700 ${isSpeaking ? 'scale-110' : isListening ? 'scale-100' : 'scale-90 opacity-50'}`}>
         
         {/* Glow Layer 1 (Cyan/Blue) */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600 rounded-full blur-[60px] opacity-60 animate-[siri-pulse_3s_ease-in-out_infinite]"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary via-blue-500 to-purple-600 rounded-full blur-[60px] opacity-60 animate-[siri-pulse_3s_ease-in-out_infinite]"></div>
         
         {/* Glow Layer 2 (Pink/Orange) */}
         <div className="absolute inset-4 bg-gradient-to-bl from-pink-500 via-orange-400 to-yellow-300 rounded-full blur-[50px] opacity-60 animate-[siri-pulse_4s_ease-in-out_infinite_reverse]"></div>
@@ -82,7 +82,7 @@ export const VoiceVisualizer: React.FC<{ isListening: boolean; isSpeaking: boole
             className="absolute inset-10 bg-white/10 backdrop-blur-3xl overflow-hidden shadow-[inset_0_0_40px_rgba(255,255,255,0.5)] border border-white/20"
             style={{
                 animation: 'siri-blob 10s linear infinite, siri-rotate 20s linear infinite',
-                background: `linear-gradient(135deg, rgba(0,242,255,0.4), rgba(236,72,153,0.4), rgba(255,255,255,0.2))`
+                background: `linear-gradient(135deg, rgba(59, 130, 246,0.4), rgba(236,72,153,0.4), rgba(255,255,255,0.2))`
             }}
         >
              {/* Inner reflections */}
@@ -97,7 +97,7 @@ export const VoiceVisualizer: React.FC<{ isListening: boolean; isSpeaking: boole
       
       {/* Siri-style Text Prompt */}
       <div className="absolute bottom-10 w-full text-center">
-        <p className={`font-sans text-2xl font-bold tracking-wide transition-all duration-500 ${isSpeaking ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-pink-300 scale-105' : isListening ? 'text-white scale-100' : 'text-gray-500'}`}>
+        <p className={`font-sans text-2xl font-bold tracking-wide transition-all duration-500 ${isSpeaking ? 'text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-300 scale-105' : isListening ? 'text-white scale-100' : 'text-gray-500'}`}>
           {isSpeaking ? 'Yusra is speaking...' : isListening ? 'Listening...' : '"Hey Yusra"'}
         </p>
         <div className="mt-2 flex justify-center gap-2">
@@ -124,10 +124,10 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+  // FIX: Replaced the constructor with a state class property.
+  // This modern syntax correctly initializes state and resolves typing errors
+  // where `this.state` and `this.props` were not recognized on the component instance.
+  state: ErrorBoundaryState = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };

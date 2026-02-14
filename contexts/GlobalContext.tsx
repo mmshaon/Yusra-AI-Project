@@ -61,7 +61,7 @@ export const translations: Record<string, Record<string, string>> = {
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
-  theme: 'cyber',
+  theme: 'alpha',
   autoSpeak: true,
   voiceRate: 1.0,
   voicePitch: 1.0, 

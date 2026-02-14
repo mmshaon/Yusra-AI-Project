@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#030810">
+  <meta name="theme-color" content="#0f172a">
   <title>Yusra AI | Quantum Intelligence</title>
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,12 @@
             display: ['"Syncopate"', 'sans-serif'],
           },
           colors: {
-            cyan: {
+            // New "Alpha Aesthetic" Palette
+            primary: 'rgb(var(--primary-rgb) / <alpha-value>)', // Accent color
+            secondary: 'rgb(var(--secondary-rgb) / <alpha-value>)', // Secondary accent
+            success: 'rgb(16 185 129 / <alpha-value>)', // Emerald Green
+            
+            cyan: { // Legacy name, now mapped to new blue accent
               DEFAULT: 'rgb(var(--primary-rgb) / <alpha-value>)',
               400: 'rgb(var(--primary-rgb) / <alpha-value>)',
               500: 'rgb(var(--primary-rgb) / <alpha-value>)',
@@ -34,11 +39,11 @@
               500: 'rgb(var(--secondary-rgb) / <alpha-value>)',
               dim: 'rgba(var(--secondary-rgb), 0.14)',
             },
-            deep: {
-              0: '#030810',
-              1: '#050c18',
-              2: '#0a1628',
-              3: '#0f2040',
+            deep: { // Deep space theme
+              0: '#0f172a',
+              1: '#1e293b',
+              2: '#334155',
+              3: '#475569',
             }
           },
           animation: {
@@ -59,8 +64,14 @@
             'nebula-spin': 'nebulaSpin 60s linear infinite',
             'float-slow': 'floatSlow 8s ease-in-out infinite',
             'text-shimmer': 'textShimmer 3s ease-in-out infinite alternate',
+            'quantum-pulse': 'quantumPulse 1.5s ease-in-out infinite',
           },
           keyframes: {
+            quantumPulse: {
+                '0%': { transform: 'scale(0.8)', opacity: 0.5 },
+                '50%': { transform: 'scale(1.1)', opacity: 1 },
+                '100%': { transform: 'scale(0.8)', opacity: 0.5 },
+            },
             orbFloat1: {
               '0%, 100%': { transform: 'translate(0,0) scale(1)' },
               '33%': { transform: 'translate(45px,-65px) scale(1.06)' },
@@ -140,8 +151,8 @@
   </script>
   <style>
     :root {
-      --primary-rgb: 0, 242, 255; /* Default Cyan */
-      --secondary-rgb: 255, 77, 166; /* Default Pink */
+      --primary-rgb: 59, 130, 246; /* Blue-500 */
+      --secondary-rgb: 236, 72, 153; /* Pink-500 */
     }
 
     /* Custom Scrollbar */
@@ -163,9 +174,9 @@
         transition: background-color 0.3s ease, color 0.3s ease;
     }
     .glass-panel {
-        background: rgba(5, 12, 24, 0.7);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(30, 41, 59, 0.7); /* slate-800/70 */
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.08);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }

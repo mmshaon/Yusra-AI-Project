@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect, useMemo, memo } from 'react';
 import { Play, Sparkles, Terminal, Palette, Settings, X, RotateCcw, Eye, Paperclip, Upload, Code as CodeIcon, FileText, Check, Camera, Bug, Save, AlertTriangle, Download, Lock } from 'lucide-react';
 import { streamResponse, GeminiAttachment } from '../services/geminiService';
@@ -286,6 +287,7 @@ export const CodeEditor = memo<CodeEditorProps>(({ userPlan = 'free' }) => {
 
     try {
         const prompt = `Task: Static Code Analysis. Code: ${code}`;
+        // FIX: Update call to handle new return type from streamResponse
         await streamResponse(prompt, [], (text) => {
             setAnalysis(text);
         });
@@ -321,10 +323,9 @@ export const CodeEditor = memo<CodeEditorProps>(({ userPlan = 'free' }) => {
 
     try {
       const prompt = `Current Code: ${code}. Instructions: ${instructions}`;
-      let fullText = "";
-      await streamResponse(prompt, attachments, (text) => {
+      // FIX: Update call to streamResponse to correctly get the full text.
+      const { fullText } = await streamResponse(prompt, attachments, (text) => {
         setAnalysis(text);
-        fullText = text;
       });
 
       const codeBlockMatch = fullText.match(/```(?:javascript|js|html|css|xml)?\n([\s\S]*?)```/);
